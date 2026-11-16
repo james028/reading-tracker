@@ -6,10 +6,6 @@ VALUES ($1,
         $2,
         $3,
         $4)
-ON CONFLICT (book_id, reading_date)
-    DO UPDATE SET pages_read = EXCLUDED.pages_read,
-                  note       = EXCLUDED.note,
-                  updated_at = now()
 RETURNING
     id,
     book_id,

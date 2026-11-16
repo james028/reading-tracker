@@ -1,4 +1,4 @@
-export interface UpsertReadingSessionInput {
+export interface CreateReadingSessionInput {
   bookId: string;
   readingDate: string;
   pagesRead: number;

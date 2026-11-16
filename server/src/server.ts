@@ -4,11 +4,13 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
+import cors from "@fastify/cors";
 import FastifySwagger from "@fastify/swagger";
 // @ts-ignore
 import ScalarApiReference from "@scalar/fastify-api-reference";
 import { booksRoutes } from "./modules/books/books.routes";
 import { readingSessionsRoutes } from "./modules/reading-sessions/reading-sessions.routes";
+import { errorHandler } from "./plugins/error-handler";
 
 const app = Fastify({
   logger: true,
@@ -37,6 +39,12 @@ app.register(FastifySwagger, {
     ],
   },
 });
+
+app.register(cors, {
+  origin: "http://localhost:5173",
+});
+
+app.register(errorHandler);
 
 app.register(ScalarApiReference, {
   routePrefix: "/docs",

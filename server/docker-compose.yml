@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: reading-tracker-db
     environment:
-      POSTGRES_USER: james09
-      POSTGRES_PASSWORD: btracker123
-      POSTGRES_DB: reading_tracker
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5436:5432"
     volumes:

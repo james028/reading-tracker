@@ -7,6 +7,22 @@ export interface BookRow {
   updated_at: string;
 }
 
+export interface Book {
+  id: string;
+  title: string;
+  author: string | null;
+  totalPages: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookListItemDto extends Book {
+  //totalPages: number;
+  pagesRead: number;
+  pagesLeft: number;
+  progressPercent: number;
+}
+
 export interface BookDto {
   id: string;
   title: string;

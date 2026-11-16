@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { query } from "../../db/database";
-import type {
+import {
   BookDto,
+  BookListItemDto,
   BookRow,
   CreateBookInput,
   GetBooksQuery,
@@ -15,12 +16,31 @@ async function loadSql(fileName: string): Promise<string> {
   return readFile(path.join(sqlDirectory, fileName), "utf8");
 }
 
-function mapBookRow(row: BookRow): BookDto {
+function mapBookRow(row: BookRow[]): BookDto {
   return {
     id: row.id,
     title: row.title,
     author: row.author,
     totalPages: row.total_pages,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapBookListItem(row: any): BookListItemDto {
+  const pagesRead = Number(row.pages_read);
+
+  return {
+    id: row.id,
+    title: row.title,
+    author: row.author,
+    totalPages: row.total_pages,
+    pagesRead,
+    pagesLeft: Math.max(row.total_pages - pagesRead, 0),
+    progressPercent:
+      row.total_pages === 0
+        ? 0
+        : Number(((pagesRead / row.total_pages) * 100).toFixed(2)),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -40,20 +60,24 @@ export const booksRepository = {
     ]);
 
     const [rows, countRows] = await Promise.all([
-      query<BookRow>(selectSql, [search, params.limit, offset]),
-      query<{ total: string }>(countSql, [search]),
+      query<BookListItemDto>(selectSql, [search, params.limit, offset]),
+      query<{
+        total: string;
+      }>(countSql, [search]),
     ]);
 
     if (!countRows) {
       throw new BookNotFoundError();
     }
+
+    console.log(rows, "rows");
     return {
-      items: rows.map(mapBookRow),
+      items: rows.map(mapBookListItem),
       total: Number(countRows[0]?.total),
     };
   },
 
-  async create(input: CreateBookInput): Promise<any> {
+  async create(input: CreateBookInput): Promise<BookDto> {
     const sql = await loadSql("insert-book.sql");
 
     const row = await query<BookRow>(sql, [
@@ -66,23 +90,14 @@ export const booksRepository = {
       throw new Error("Book not found");
     }
 
-    //return mapBookRow(row);
-
-    console.log(row, "row po create");
-    // return {
-    //   id: row.id,
-    //   title: row.title,
-    //   author: row.author,
-    //   totalPages: row.total_pages,
-    //   createdAt: row.created_at,
-    //   updatedAt: row.updated_at,
-    // }
+    return mapBookRow(row);
   },
 
   async findById(id: string): Promise<BookDto | null> {
     const sql = await loadSql("select-book-by-id.sql");
     const rows = await query<any>(sql, [id]);
 
+    //OK
     console.log(rows, " find id ");
     return rows[0] ? mapBookRow(rows[0]) : null;
   },

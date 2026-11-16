@@ -1,6 +1,6 @@
 import { booksRepository } from "../books/books.repository";
-import { UpsertReadingSessionInput } from "./reading-sessions.types";
 import { readingSessionsRepository } from "./reading-sessions.repository";
+import { CreateReadingSessionInput } from "./reading-sessions.types";
 
 export class BookNotFoundError extends Error {
   constructor() {
@@ -15,17 +15,17 @@ export class PagesLimitExceededError extends Error {
 }
 
 export const readingSessionsService = {
-  async upsert(input: UpsertReadingSessionInput) {
+  async create(input: CreateReadingSessionInput) {
     const book = await booksRepository.findById(input.bookId);
 
     if (!book) {
       throw new BookNotFoundError();
     }
 
+    console.log("po book", book);
     const previousPages =
       await readingSessionsRepository.countPagesExcludingDate({
         bookId: input.bookId,
-        readingDate: input.readingDate,
       });
 
     const totalAfterSave = previousPages + input.pagesRead;
@@ -34,7 +34,7 @@ export const readingSessionsService = {
       throw new PagesLimitExceededError();
     }
 
-    return readingSessionsRepository.upsert(input);
+    return readingSessionsRepository.createSession(input);
   },
   findAll() {},
 };

@@ -2,9 +2,9 @@ import path from "node:path";
 import { query } from "../../db/database";
 import { readFile } from "node:fs/promises";
 import {
+  CreateReadingSessionInput,
   ReadingSessionDto,
   ReadingSessionRow,
-  UpsertReadingSessionInput,
 } from "./reading-sessions.types";
 
 const sqlDirectory = path.join(__dirname, "sql");
@@ -26,9 +26,12 @@ function mapReadingSessionRow(row: ReadingSessionRow): ReadingSessionDto {
 }
 
 export const readingSessionsRepository = {
-  async upsert(input: UpsertReadingSessionInput): Promise<ReadingSessionDto> {
-    const sql = await loadSql("upsert-reading-session.sql");
+  async createSession(
+    input: CreateReadingSessionInput,
+  ): Promise<ReadingSessionDto> {
+    const sql = await loadSql("create-reading-sessions.sql");
 
+    console.log(input, "input");
     const rows = await query<ReadingSessionRow>(sql, [
       input.bookId,
       input.readingDate,
@@ -36,19 +39,18 @@ export const readingSessionsRepository = {
       input.note ?? null,
     ]);
 
-    // @ts-ignore
-    return mapReadingSessionRow(rows[0]);
+    const row = rows[0];
+
+    if (!row) {
+      throw new Error("Failed to create reading session");
+    }
+
+    return mapReadingSessionRow(row);
   },
-  async countPagesExcludingDate(params: {
-    bookId: string;
-    readingDate: string;
-  }): Promise<number> {
+  async countPagesExcludingDate(params: { bookId: string }): Promise<number> {
     const sql = await loadSql("count-pages-excluding-date.sql");
 
-    const rows = await query<{ pages_read: string }>(sql, [
-      params.bookId,
-      params.readingDate,
-    ]);
+    const rows = await query<{ pages_read: string }>(sql, [params.bookId]);
 
     return Number(rows[0]?.pages_read);
   },

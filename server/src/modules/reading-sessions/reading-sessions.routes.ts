@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from "fastify";
 import {
   bookIdParamsSchema,
-  upsertReadingSessionSchema,
+  createReadingSessionSchema,
 } from "./reading-sessions.schema";
 import { readingSessionsService } from "./reading-sessions.service";
 
@@ -13,12 +13,15 @@ export const readingSessionsRoutes: FastifyPluginAsync = async (
     {
       schema: {
         params: bookIdParamsSchema,
-        body: upsertReadingSessionSchema,
+        body: createReadingSessionSchema,
+        summary: "Create a reading session",
+        description:
+          "Creates a new reading session. Multiple sessions can be created for the same book and date.",
+        tags: ["Reading sessions"],
       },
     },
     async (request, reply) => {
-      // @ts-ignore
-      const session = await readingSessionsService.upsert({
+      const session = await readingSessionsService.create({
         // @ts-ignore
         bookId: request.params.bookId,
         // @ts-ignore
