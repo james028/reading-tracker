@@ -1,10 +1,8 @@
-import type { FastifyInstance, FastifyPluginAsyncZod } from "fastify";
+import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { createBookSchema, getBooksQuerySchema } from "./books.schemas";
 import { booksService } from "./books.service";
 
-export const booksRoutes: FastifyPluginAsyncZod = async (
-  app: FastifyInstance,
-) => {
+export const booksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   app.get(
     "/books",
     {
@@ -13,7 +11,8 @@ export const booksRoutes: FastifyPluginAsyncZod = async (
       },
     },
     async function (request, reply) {
-      const result = await booksService.getBooks(request.query);
+      const query = getBooksQuerySchema.parse(request.query);
+      const result = await booksService.getBooks(query);
 
       return reply.code(200).send(result);
     },
@@ -27,7 +26,8 @@ export const booksRoutes: FastifyPluginAsyncZod = async (
       },
     },
     async function (request, reply) {
-      const book = await booksService.createBook(request.body);
+      const body = createBookSchema.parse(request.body);
+      const book = await booksService.createBook(body);
 
       return reply.code(201).send(book);
     },

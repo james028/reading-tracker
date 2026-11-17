@@ -16,16 +16,16 @@ async function loadSql(fileName: string): Promise<string> {
   return readFile(path.join(sqlDirectory, fileName), "utf8");
 }
 
-function mapBookRow(row: BookRow[]): BookDto {
-  return {
-    id: row.id,
-    title: row.title,
-    author: row.author,
-    totalPages: row.total_pages,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
+// function mapBookRow(row: BookRow[]): BookDto {
+//   return {
+//     id: row.id,
+//     title: row.title,
+//     author: row.author,
+//     totalPages: row.total_pages,
+//     createdAt: row.created_at,
+//     updatedAt: row.updated_at,
+//   };
+// }
 
 function mapBookListItem(row: any): BookListItemDto {
   const pagesRead = Number(row.pages_read);
@@ -101,6 +101,6 @@ export const booksRepository = {
 
     //OK
     console.log(rows, " find id ");
-    return rows[0] ? mapBookRow(rows[0]) : null;
+    return rows[0] ?? null;
   },
 };

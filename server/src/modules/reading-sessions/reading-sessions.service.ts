@@ -16,15 +16,12 @@ export class PagesLimitExceededError extends Error {
 
 export const readingSessionsService = {
   async create(input: CreateReadingSessionInput) {
-    console.log(input.pagesRead, "!!!!!!!!!!!!1");
-
     const book = await booksRepository.findById(input.bookId);
 
     if (!book) {
       throw new BookNotFoundError();
     }
 
-    console.log("po book", book);
     const previousPages =
       await readingSessionsRepository.countPagesExcludingDate({
         bookId: input.bookId,

@@ -21,16 +21,14 @@ export const readingSessionsRoutes: FastifyPluginAsync = async (
       },
     },
     async (request, reply) => {
-      console.log(request.body.pagesRead, "!!!!!!!!!!!!1");
+      const { bookId } = bookIdParamsSchema.parse(request.params);
+
+      const input = createReadingSessionSchema.parse(request.body);
+
       const session = await readingSessionsService.create({
-        // @ts-ignore
-        bookId: request.params.bookId,
-        // @ts-ignore
-        readingDate: request.body.readingDate,
-        // @ts-ignore
-        pagesRead: request.body.pagesRead,
-        // @ts-ignore
-        note: request.body.note,
+        bookId,
+        pagesRead: input.pagesRead,
+        readingDate: input.readingDate,
       });
 
       return reply.code(201).send(session);

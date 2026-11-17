@@ -33,14 +33,14 @@ export interface BookDto {
 }
 
 export interface GetBooksQuery {
-  search?: string;
+  search?: string | undefined;
   page: number;
   limit: number;
 }
 
 export interface CreateBookInput {
   title: string;
-  author?: string;
+  author?: string | undefined;
   totalPages: number;
 }
 
