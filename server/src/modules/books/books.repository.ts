@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { query } from "../../db/database";
 import {
   BookDto,
@@ -9,12 +7,6 @@ import {
   GetBooksQuery,
 } from "./books.types";
 import { BookNotFoundError } from "../reading-sessions/reading-sessions.service";
-
-const sqlDirectory = path.join(__dirname, "sql");
-
-async function loadSql(fileName: string): Promise<string> {
-  return readFile(path.join(sqlDirectory, fileName), "utf8");
-}
 
 // function mapBookRow(row: BookRow[]): BookDto {
 //   return {
@@ -54,9 +46,32 @@ export const booksRepository = {
     const search = params.search || null;
     const offset = (params.page - 1) * params.limit;
 
+    const selectBooksSqlRaw = `SELECT b.id,
+                                          b.title,
+                                          b.author,
+                                          b.total_pages,
+                                          b.created_at,
+                                          b.updated_at,
+                                          COALESCE(SUM(rs.pages_read), 0) AS pages_read
+                                   FROM books b
+                                            LEFT JOIN reading_sessions rs
+                                                      ON rs.book_id = b.id
+                                   WHERE ($1::text IS NULL OR b.title ILIKE '%' || $1 || '%')
+                                   GROUP BY b.id,
+                                            b.title,
+                                            b.author,
+                                            b.total_pages,
+                                            b.created_at,
+                                            b.updated_at
+                                   ORDER BY b.created_at DESC
+                                   LIMIT $2 OFFSET $3;`;
+    const countBooksSqlRaw = `SELECT COUNT(*) AS total
+                                  FROM books
+                                  WHERE ($1::text IS NULL OR title ILIKE '%' || $1 || '%');`;
+
     const [selectSql, countSql] = await Promise.all([
-      loadSql("select-books.sql"),
-      loadSql("count-books.sql"),
+      selectBooksSqlRaw,
+      countBooksSqlRaw,
     ]);
 
     const [rows, countRows] = await Promise.all([
@@ -70,7 +85,6 @@ export const booksRepository = {
       throw new BookNotFoundError();
     }
 
-    console.log(rows, "rows");
     return {
       items: rows.map(mapBookListItem),
       total: Number(countRows[0]?.total),
@@ -78,7 +92,19 @@ export const booksRepository = {
   },
 
   async create(input: CreateBookInput): Promise<any> {
-    const sql = await loadSql("insert-book.sql");
+    const sql = `INSERT INTO books (title,
+                                        author,
+                                        total_pages)
+                     VALUES ($1,
+                             $2,
+                             $3)
+                     RETURNING
+                         id,
+                         title,
+                         author,
+                         total_pages,
+                         created_at,
+                         updated_at;`;
 
     const row = await query<BookRow>(sql, [
       input.title,
@@ -90,17 +116,20 @@ export const booksRepository = {
       throw new Error("Book not found");
     }
 
-    //console.log(mapBookRow(row), "row", row);
-    //return mapBookRow(row);
     return row[0];
   },
 
   async findById(id: string): Promise<BookDto | null> {
-    const sql = await loadSql("select-book-by-id.sql");
+    const sql = `SELECT id,
+                            title,
+                            author,
+                            total_pages,
+                            created_at,
+                            updated_at
+                     FROM books
+                     WHERE id = $1;`;
     const rows = await query<any>(sql, [id]);
 
-    //OK
-    console.log(rows, " find id ");
     return rows[0] ?? null;
   },
 };

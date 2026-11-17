@@ -29,9 +29,23 @@ export const readingSessionsRepository = {
   async createSession(
     input: CreateReadingSessionInput,
   ): Promise<ReadingSessionDto> {
-    const sql = await loadSql("create-reading-sessions.sql");
+    const sql = `INSERT INTO reading_sessions (book_id,
+                                                   reading_date,
+                                                   pages_read,
+                                                   note)
+                     VALUES ($1,
+                             $2,
+                             $3,
+                             $4)
+                     RETURNING
+                         id,
+                         book_id,
+                         reading_date,
+                         pages_read,
+                         note,
+                         created_at,
+                         updated_at;`;
 
-    console.log(input, "input");
     const rows = await query<ReadingSessionRow>(sql, [
       input.bookId,
       input.readingDate,
@@ -48,7 +62,9 @@ export const readingSessionsRepository = {
     return mapReadingSessionRow(row);
   },
   async countPagesExcludingDate(params: { bookId: string }): Promise<number> {
-    const sql = await loadSql("count-pages-excluding-date.sql");
+    const sql = `SELECT COALESCE(SUM(pages_read), 0) AS pages_read
+                     FROM reading_sessions
+                     WHERE book_id = $1;`;
 
     const rows = await query<{ pages_read: string }>(sql, [params.bookId]);
 

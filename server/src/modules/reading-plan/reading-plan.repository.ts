@@ -1,20 +1,19 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { query } from "../../db/database";
 import { ReadingPlanRow } from "./reding-plan.types";
-
-const sqlDirectory = path.join(__dirname, "sql");
-
-async function loadSql(fileName: string): Promise<string> {
-  return readFile(path.join(sqlDirectory, fileName), "utf8");
-}
 
 export const readingPlanRepository = {
   async getTotals(): Promise<{
     totalPages: number;
     pagesRead: number;
   }> {
-    const sql = await loadSql("select-reading-plan.sql");
+    const sql = `SELECT COALESCE(SUM(b.total_pages), 0)                    AS total_pages,
+                            COALESCE(SUM(COALESCE(progress.pages_read, 0)), 0) AS pages_read
+                     FROM books b
+                              LEFT JOIN (SELECT book_id,
+                                                SUM(pages_read) AS pages_read
+                                         FROM reading_sessions
+                                         GROUP BY book_id) progress
+                                        ON progress.book_id = b.id;`;
 
     const rows = await query<ReadingPlanRow>(sql, []);
 
