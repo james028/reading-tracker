@@ -103,10 +103,10 @@
 </section>
 
 <section class="books-section">
-    <h2>Twoje książki</h2>
+    <h2>Your books</h2>
 
     {#if booksQuery.isPending}
-        <p class="muted">Ładowanie książek...</p>
+        <p class="muted">Loading...</p>
     {:else if booksQuery.isError}
         <p class="error" role="alert">
             {booksQuery.error.message}
@@ -135,12 +135,12 @@
 
                         <div class="book-stats">
               <span>
-                Przeczytano {book.pagesRead}
-                  z {book.totalPages}
+                Read pages: {book.pagesRead}
+                  from {book.totalPages}
               </span><br />
 
                             <span class="muted">
-                Zostało: {book.pagesLeft}
+                Left pages: {book.pagesLeft}
               </span>
                         </div>
                     </article>
