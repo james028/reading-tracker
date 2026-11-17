@@ -42,7 +42,7 @@ app.register(FastifySwagger, {
 });
 
 app.register(cors, {
-  origin: ["http://localhost:5173", "https://reading-tracker-jk-9.vercel.app/"],
+  origin: ["http://localhost:5173", "https://reading-tracker-jk-9.vercel.app"],
 });
 
 app.register(errorHandler);
