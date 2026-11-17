@@ -11,6 +11,7 @@ import ScalarApiReference from "@scalar/fastify-api-reference";
 import { booksRoutes } from "./modules/books/books.routes";
 import { readingSessionsRoutes } from "./modules/reading-sessions/reading-sessions.routes";
 import { errorHandler } from "./plugins/error-handler";
+import { readingPlanRoutes } from "./modules/reading-plan/reading-plan.routes";
 
 const app = Fastify({
   logger: true,
@@ -55,6 +56,10 @@ app.register(booksRoutes, {
 });
 
 app.register(readingSessionsRoutes, {
+  prefix: "/api",
+});
+
+app.register(readingPlanRoutes, {
   prefix: "/api",
 });
 

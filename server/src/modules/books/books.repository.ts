@@ -77,7 +77,7 @@ export const booksRepository = {
     };
   },
 
-  async create(input: CreateBookInput): Promise<BookDto> {
+  async create(input: CreateBookInput): Promise<any> {
     const sql = await loadSql("insert-book.sql");
 
     const row = await query<BookRow>(sql, [
@@ -90,7 +90,9 @@ export const booksRepository = {
       throw new Error("Book not found");
     }
 
-    return mapBookRow(row);
+    //console.log(mapBookRow(row), "row", row);
+    //return mapBookRow(row);
+    return row[0];
   },
 
   async findById(id: string): Promise<BookDto | null> {

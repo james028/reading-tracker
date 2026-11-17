@@ -21,6 +21,7 @@ export const readingSessionsRoutes: FastifyPluginAsync = async (
       },
     },
     async (request, reply) => {
+      console.log(request.body.pagesRead, "!!!!!!!!!!!!1");
       const session = await readingSessionsService.create({
         // @ts-ignore
         bookId: request.params.bookId,
