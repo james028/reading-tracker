@@ -1,11 +1,21 @@
 <script lang="ts">
     import {createQuery} from "@tanstack/svelte-query";
     import {getReadingPlan} from "#lib/api/reading-plan.api.ts";
+    import {getBooks} from "#lib/api/books.api.ts";
 
     const readingPlanQuery = createQuery(() => ({
         queryKey: ["reading-plan"],
         queryFn: getReadingPlan,
     }));
+
+    const booksQuery = createQuery(() => ({
+        queryKey: ["books"],
+        queryFn: getBooks,
+    }));
+
+    const booksData = booksQuery?.data;
+    const bookItems = booksData?.items;
+    console.log(bookItems);
 
     const progressPercent = $derived.by(() => {
         const plan = readingPlanQuery.data;
@@ -92,6 +102,54 @@
     {/if}
 </section>
 
+<section class="books-section">
+    <h2>Twoje książki</h2>
+
+    {#if booksQuery.isPending}
+        <p class="muted">Ładowanie książek...</p>
+    {:else if booksQuery.isError}
+        <p class="error" role="alert">
+            {booksQuery.error.message}
+        </p>
+    {:else if booksQuery.isSuccess}
+        <ul class="books-list">
+            {#each booksQuery.data.items as book, i (book.id)}
+                <li>
+                    <article class="book-card">
+                        <div class="book-header">
+                            <div class="book-info">
+                                <h3>{i + 1}. {book.title}</h3>
+                                <p class="muted">{book.author}</p>
+                            </div>
+
+                            <span class="badge">
+                {book.progressPercent}%
+              </span>
+                        </div>
+
+                        <progress
+                                class="progress"
+                                value={book.pagesRead}
+                                max={book.totalPages}
+                        ></progress>
+
+                        <div class="book-stats">
+              <span>
+                Przeczytano {book.pagesRead}
+                  z {book.totalPages}
+              </span><br />
+
+                            <span class="muted">
+                Zostało: {book.pagesLeft}
+              </span>
+                        </div>
+                    </article>
+                </li>
+            {/each}
+        </ul>
+    {/if}
+</section>
+
 <style>
     .summary {
         padding: 1.5rem;
@@ -122,5 +180,16 @@
 
     .summary-card strong {
         font-size: 1.5rem;
+    }
+
+
+    .book-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .book-info h3 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
     }
 </style>
