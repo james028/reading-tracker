@@ -135,12 +135,12 @@
 
                         <div class="book-stats">
               <span>
-                Read pages: {book.pagesRead}
-                  from {book.totalPages}
+                Pages read: {book.pagesRead}
+                  of {book.totalPages}
               </span><br />
 
                             <span class="muted">
-                Left pages: {book.pagesLeft}
+                Pages left: {book.pagesLeft}
               </span>
                         </div>
                     </article>
