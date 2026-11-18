@@ -6,20 +6,15 @@ import {
   CreateBookInput,
   GetBooksQuery,
 } from "./books.types";
-import { BookNotFoundError } from "../reading-sessions/reading-sessions.service";
+import { BookNotFoundError } from "../reading-sessions/reading-sessions.service"; // function mapBookRow(row: BookRow[]): BookDto {
 
-// function mapBookRow(row: BookRow[]): BookDto {
-//   return {
-//     id: row.id,
-//     title: row.title,
-//     author: row.author,
-//     totalPages: row.total_pages,
-//     createdAt: row.created_at,
-//     updatedAt: row.updated_at,
-//   };
-// }
+class BookTitleAlreadyExistsError extends Error {
+  constructor() {
+    super("Book title is already exists");
+  }
+}
 
-function mapBookListItem(row: any): BookListItemDto {
+function mapBookListItem(row: BookRow): BookListItemDto {
   const pagesRead = Number(row.pages_read);
 
   return {
@@ -74,52 +69,69 @@ export const booksRepository = {
       countBooksSqlRaw,
     ]);
 
-    const [rows, countRows] = await Promise.all([
-      query<BookListItemDto>(selectSql, [search, params.limit, offset]),
+    const [result, countRows] = await Promise.all([
+      query<BookRow>(selectSql, [search, params.limit, offset]),
       query<{
         total: string;
       }>(countSql, [search]),
     ]);
 
+    if (!result) {
+      throw new BookNotFoundError();
+    }
     if (!countRows) {
       throw new BookNotFoundError();
     }
 
     return {
-      items: rows.map(mapBookListItem),
+      items: result.map(mapBookListItem),
       total: Number(countRows[0]?.total),
     };
   },
 
-  async create(input: CreateBookInput): Promise<any> {
-    const sql = `INSERT INTO books (title,
-                                        author,
-                                        total_pages)
-                     VALUES ($1,
-                             $2,
-                             $3)
-                     RETURNING
-                         id,
-                         title,
-                         author,
-                         total_pages,
-                         created_at,
-                         updated_at;`;
+  async create(input: CreateBookInput): Promise<BookRow> {
+    try {
+      const sql = `INSERT INTO books (title,
+                                            author,
+                                            total_pages)
+                         VALUES ($1,
+                                 $2,
+                                 $3)
+                         RETURNING
+                             id,
+                             title,
+                             author,
+                             total_pages,
+                             created_at,
+                             updated_at;`;
 
-    const row = await query<BookRow>(sql, [
-      input.title,
-      input.author ?? null,
-      input.totalPages,
-    ]);
+      const rows = await query<BookRow>(sql, [
+        input.title,
+        input.author ?? null,
+        input.totalPages,
+      ]);
 
-    if (!row) {
-      throw new Error("Book not found");
+      const row = rows[0];
+      if (!row) {
+        throw new Error("Book not found");
+      }
+
+      return row;
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "23505"
+      ) {
+        throw new BookTitleAlreadyExistsError();
+      }
+
+      throw error;
     }
-
-    return row[0];
   },
 
-  async findById(id: string): Promise<BookDto | null> {
+  async findById(id: string): Promise<BookRow> {
     const sql = `SELECT id,
                             title,
                             author,
@@ -128,8 +140,13 @@ export const booksRepository = {
                             updated_at
                      FROM books
                      WHERE id = $1;`;
-    const rows = await query<any>(sql, [id]);
+    const rows = await query<BookRow>(sql, [id]);
 
-    return rows[0] ?? null;
+    const row = rows[0];
+    if (!row) {
+      throw new Error();
+    }
+
+    return row;
   },
 };

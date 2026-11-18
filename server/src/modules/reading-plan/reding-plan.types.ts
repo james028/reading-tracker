@@ -10,6 +10,7 @@ export interface ReadingPlanDto {
   totalPages: number;
   pagesRead: number;
   pagesLeft: number;
+  pagesReadToday: number;
   requiredPagesPerDay: number;
   recommendedPagesPerDay: number;
   isAchievable: boolean;

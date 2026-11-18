@@ -1,6 +1,12 @@
 import { query } from "../../db/database";
 import { ReadingPlanRow } from "./reding-plan.types";
 
+export class ReadPagesTodayError extends Error {
+  constructor() {
+    super("Data of pages reading not found.");
+  }
+}
+
 export const readingPlanRepository = {
   async getTotals(): Promise<{
     totalPages: number;
@@ -22,6 +28,24 @@ export const readingPlanRepository = {
     return {
       totalPages: Number(row?.total_pages),
       pagesRead: Number(row?.pages_read),
+    };
+  },
+  async readingToday(): Promise<{
+    pagesReadToday: number;
+  }> {
+    const sql = `SELECT COALESCE(SUM(pages_read), 0) AS pages_read_today
+                     FROM reading_sessions
+                     WHERE reading_date = CURRENT_DATE;`;
+
+    const pages = await query<{ pages_read_today: number }>(sql, []);
+
+    const pagesReadToday = pages[0];
+    if (!pagesReadToday) {
+      throw new Error("Data of read pages not found.");
+    }
+
+    return {
+      pagesReadToday: Number(pagesReadToday.pages_read_today),
     };
   },
 };

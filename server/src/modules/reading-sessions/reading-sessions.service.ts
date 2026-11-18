@@ -29,7 +29,7 @@ export const readingSessionsService = {
 
     const totalAfterSave = previousPages + input.pagesRead;
 
-    if (totalAfterSave > book.totalPages) {
+    if (totalAfterSave > book.total_pages) {
       throw new PagesLimitExceededError();
     }
 

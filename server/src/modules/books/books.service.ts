@@ -1,6 +1,6 @@
 import { booksRepository } from "./books.repository";
 import type {
-  BookDto,
+  BookRow,
   CreateBookInput,
   GetBooksQuery,
   PaginatedBooksDto,
@@ -21,7 +21,7 @@ export const booksService = {
     };
   },
 
-  async createBook(input: CreateBookInput): Promise<BookDto> {
-    return booksRepository.create(input);
+  async createBook(input: CreateBookInput): Promise<BookRow> {
+    return await booksRepository.create(input);
   },
 };

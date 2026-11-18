@@ -13,9 +13,12 @@
         queryFn: getBooks,
     }));
 
-    const booksData = booksQuery?.data;
-    const bookItems = booksData?.items;
-    console.log(bookItems);
+    const countBooks = $derived(
+        booksQuery?.data?.items?.reduce(
+            (count, book) => count + (book.pagesLeft !== 0 ? 1 : 0),
+            0
+        ) ?? 0
+    );
 
     const progressPercent = $derived.by(() => {
         const plan = readingPlanQuery.data;
@@ -58,7 +61,15 @@
             <div class="summary-card">
                 <span>Pages left</span>
                 <strong>
-                    {readingPlanQuery.data.pagesLeft}
+                    {readingPlanQuery.data.pagesLeft} <span>in {countBooks} book(s)</span>
+                </strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Read today</span>
+                <strong>
+                    {readingPlanQuery.data.pagesReadToday}
+                    <span>pages</span>
                 </strong>
             </div>
 
@@ -83,7 +94,7 @@
         ></progress>
 
         <p>
-            To finish all books by
+            To finish all books ({countBooks}) by
             {readingPlanQuery.data.yearEndDate},
             read on average
             {readingPlanQuery.data.requiredPagesPerDay}
@@ -137,7 +148,7 @@
               <span>
                 Pages read: {book.pagesRead}
                   of {book.totalPages}
-              </span><br />
+              </span><br/>
 
                             <span class="muted">
                 Pages left: {book.pagesLeft}

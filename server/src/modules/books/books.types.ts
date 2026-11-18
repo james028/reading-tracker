@@ -5,6 +5,7 @@ export interface BookRow {
   total_pages: number;
   created_at: string;
   updated_at: string;
+  pages_read: number;
 }
 
 export interface Book {

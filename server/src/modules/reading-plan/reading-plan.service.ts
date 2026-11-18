@@ -25,7 +25,9 @@ function getDaysLeft(today: Date, yearEndDate: Date): number {
 
 export const readingPlanService = {
   async getReadingPlan(): Promise<ReadingPlanDto> {
+    //promise all
     const { totalPages, pagesRead } = await readingPlanRepository.getTotals();
+    const { pagesReadToday } = await readingPlanRepository.readingToday();
 
     const today = new Date();
     const year = today.getFullYear();
@@ -43,6 +45,7 @@ export const readingPlanService = {
       totalPages,
       pagesRead,
       pagesLeft,
+      pagesReadToday,
       requiredPagesPerDay: Number(requiredPagesPerDay.toFixed(2)),
       recommendedPagesPerDay: Math.ceil(requiredPagesPerDay),
       isAchievable: pagesLeft === 0 || daysLeft > 0,
