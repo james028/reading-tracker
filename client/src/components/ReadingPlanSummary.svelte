@@ -2,6 +2,10 @@
     import {createQuery} from "@tanstack/svelte-query";
     import {getReadingPlan} from "#lib/api/reading-plan.api.ts";
     import {getBooks} from "#lib/api/books.api.ts";
+    import BookCard from "./BookCard.svelte";
+
+    let pages = $state('');
+
 
     const readingPlanQuery = createQuery(() => ({
         queryKey: ["reading-plan"],
@@ -31,6 +35,18 @@
             ((plan.pagesRead / plan.totalPages) * 100).toFixed(2),
         );
     });
+
+    // const setPages = (bookId: string, value: number | undefined) => {
+    //     pagesByBookId[bookId] = value;
+    // }
+    //
+    // const onChange = (event: Event, bookId: string) => {
+    //     const target = event.currentTarget as HTMLInputElement;
+    //     setPages(bookId, target.value === '' ? undefined : Number(target.value))
+    //     console.log($state.snapshot(pagesByBookId));
+    // }
+
+    
 </script>
 
 <section class="summary">
@@ -125,37 +141,7 @@
     {:else if booksQuery.isSuccess}
         <ul class="books-list">
             {#each booksQuery.data.items as book, i (book.id)}
-                <li>
-                    <article class="book-card">
-                        <div class="book-header">
-                            <div class="book-info">
-                                <h3>{i + 1}. {book.title}</h3>
-                                <p class="muted">{book.author}</p>
-                            </div>
-
-                            <span class="badge">
-                {book.progressPercent}%
-              </span>
-                        </div>
-
-                        <progress
-                                class="progress"
-                                value={book.pagesRead}
-                                max={book.totalPages}
-                        ></progress>
-
-                        <div class="book-stats">
-              <span>
-                Pages read: {book.pagesRead}
-                  of {book.totalPages}
-              </span><br/>
-
-                            <span class="muted">
-                Pages left: {book.pagesLeft}
-              </span>
-                        </div>
-                    </article>
-                </li>
+                <BookCard book={book} index={i}/>
             {/each}
         </ul>
     {/if}

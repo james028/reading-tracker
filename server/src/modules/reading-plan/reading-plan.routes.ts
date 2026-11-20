@@ -12,7 +12,6 @@ export const readingPlanRoutes: FastifyPluginAsync = async (app) => {
         tags: ["Reading plan"],
       },
     },
-    // @ts-ignore
     async (_request, reply) => {
       const plan = await readingPlanService.getReadingPlan();
 
