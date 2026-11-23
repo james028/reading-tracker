@@ -1,5 +1,5 @@
-import { apiRequest } from "./http";
-import type { BooksResponse } from "#lib/types/book.ts";
+import { apiRequest } from "./http.ts";
+import type { BooksResponse } from "#lib";
 
 export function getBooks(): Promise<BooksResponse> {
   return apiRequest<BooksResponse>("/books");

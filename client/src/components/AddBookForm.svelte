@@ -1,9 +1,9 @@
 <script lang="ts">
-    let {  } = $props();
+  let {} = $props();
 </script>
 
 <section class="card">
-    <h2 class="section-title">$TITLE$</h2>
+  <h2 class="section-title">$TITLE$</h2>
 
-    $END$
+  $END$
 </section>

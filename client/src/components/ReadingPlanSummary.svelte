@@ -1,192 +1,166 @@
 <script lang="ts">
-    import {createQuery} from "@tanstack/svelte-query";
-    import {getReadingPlan} from "#lib/api/reading-plan.api.ts";
-    import {getBooks} from "#lib/api/books.api.ts";
-    import BookCard from "./BookCard.svelte";
+  import { createQuery } from "@tanstack/svelte-query";
+  import { getReadingPlan } from "#lib";
+  import { getBooks } from "#lib";
+  import BookCard from "./BookCard.svelte";
 
-    let pages = $state('');
+  const readingPlanQuery = createQuery(() => ({
+    queryKey: ["reading-plan"],
+    queryFn: getReadingPlan,
+  }));
 
+  const booksQuery = createQuery(() => ({
+    queryKey: ["books"],
+    queryFn: getBooks,
+  }));
 
-    const readingPlanQuery = createQuery(() => ({
-        queryKey: ["reading-plan"],
-        queryFn: getReadingPlan,
-    }));
+  const countBooks = $derived(
+    booksQuery?.data?.items?.reduce(
+      (count, book) => count + (book.pagesLeft !== 0 ? 1 : 0),
+      0,
+    ) ?? 0,
+  );
 
-    const booksQuery = createQuery(() => ({
-        queryKey: ["books"],
-        queryFn: getBooks,
-    }));
+  const progressPercent = $derived.by(() => {
+    const plan = readingPlanQuery.data;
 
-    const countBooks = $derived(
-        booksQuery?.data?.items?.reduce(
-            (count, book) => count + (book.pagesLeft !== 0 ? 1 : 0),
-            0
-        ) ?? 0
-    );
+    if (!plan || plan.totalPages === 0) {
+      return 0;
+    }
 
-    const progressPercent = $derived.by(() => {
-        const plan = readingPlanQuery.data;
-
-        if (!plan || plan.totalPages === 0) {
-            return 0;
-        }
-
-        return Number(
-            ((plan.pagesRead / plan.totalPages) * 100).toFixed(2),
-        );
-    });
-
-    // const setPages = (bookId: string, value: number | undefined) => {
-    //     pagesByBookId[bookId] = value;
-    // }
-    //
-    // const onChange = (event: Event, bookId: string) => {
-    //     const target = event.currentTarget as HTMLInputElement;
-    //     setPages(bookId, target.value === '' ? undefined : Number(target.value))
-    //     console.log($state.snapshot(pagesByBookId));
-    // }
-
-    
+    return Number(((plan.pagesRead / plan.totalPages) * 100).toFixed(2));
+  });
 </script>
 
 <section class="summary">
-    <h2>Yearly reading plan</h2>
+  <h2>Yearly reading plan</h2>
 
-    {#if readingPlanQuery.isPending}
-        <p>Loading reading plan...</p>
-    {:else if readingPlanQuery.isError}
-        <p role="alert">
-            {readingPlanQuery.error.message}
-        </p>
-    {:else if readingPlanQuery.data}
-        <div class="summary-grid">
-            <div class="summary-card">
-                <span>Days left</span>
-                <strong>
-                    {readingPlanQuery.data.daysLeft}
-                </strong>
-            </div>
+  {#if readingPlanQuery.isPending}
+    <p>Loading reading plan...</p>
+  {:else if readingPlanQuery.isError}
+    <p role="alert">
+      {readingPlanQuery.error.message}
+    </p>
+  {:else if readingPlanQuery.data}
+    <div class="summary-grid">
+      <div class="summary-card">
+        <span>Days left</span>
+        <strong>
+          {readingPlanQuery.data.daysLeft}
+        </strong>
+      </div>
 
-            <div class="summary-card">
-                <span>Total pages</span>
-                <strong>
-                    {readingPlanQuery.data.totalPages}
-                </strong>
-            </div>
+      <div class="summary-card">
+        <span>Total pages</span>
+        <strong>
+          {readingPlanQuery.data.totalPages}
+        </strong>
+      </div>
 
-            <div class="summary-card">
-                <span>Pages left</span>
-                <strong>
-                    {readingPlanQuery.data.pagesLeft} <span>in {countBooks} book(s)</span>
-                </strong>
-            </div>
+      <div class="summary-card">
+        <span>Pages left</span>
+        <strong>
+          {readingPlanQuery.data.pagesLeft} <span>in {countBooks} book(s)</span>
+        </strong>
+      </div>
 
-            <div class="summary-card">
-                <span>Read today</span>
-                <strong>
-                    {readingPlanQuery.data.pagesReadToday}
-                    <span>pages</span>
-                </strong>
-            </div>
+      <div class="summary-card">
+        <span>Read today</span>
+        <strong>
+          {readingPlanQuery.data.pagesReadToday}
+          <span>pages</span>
+        </strong>
+      </div>
 
+      <div class="summary-card">
+        <span>Read per day</span>
+        <strong>
+          {readingPlanQuery.data.recommendedPagesPerDay}
+          <span>pages</span>
+        </strong>
+      </div>
 
-            <div class="summary-card">
-                <span>Read per day</span>
-                <strong>
-                    {readingPlanQuery.data.recommendedPagesPerDay}
-                    pages
-                </strong>
-            </div>
+      <div class="summary-card">
+        <span>Progress</span>
+        <strong>{progressPercent}%</strong>
+      </div>
+    </div>
 
-            <div class="summary-card">
-                <span>Progress</span>
-                <strong>{progressPercent}%</strong>
-            </div>
-        </div>
+    <progress
+      value={readingPlanQuery.data.pagesRead}
+      max={readingPlanQuery.data.totalPages}
+    ></progress>
 
-        <progress
-                value={readingPlanQuery.data.pagesRead}
-                max={readingPlanQuery.data.totalPages}
-        ></progress>
+    <p>
+      <span>
+           To finish all books ({countBooks}) by
+        {readingPlanQuery.data.yearEndDate}, read on average
+        {readingPlanQuery.data.requiredPagesPerDay}
+        pages per day.
+      </span>
 
-        <p>
-            To finish all books ({countBooks}) by
-            {readingPlanQuery.data.yearEndDate},
-            read on average
-            {readingPlanQuery.data.requiredPagesPerDay}
-            pages per day.
-        </p>
+    </p>
 
-        {#if readingPlanQuery.data.pagesLeft === 0}
-            <p role="status">
-                All books have been completed.
-            </p>
-        {:else if !readingPlanQuery.data.isAchievable}
-            <p role="alert">
-                There is no time left to finish all books this year.
-            </p>
-        {/if}
+    {#if readingPlanQuery.data.pagesLeft === 0}
+      <p role="status">All books have been completed.</p>
+    {:else if !readingPlanQuery.data.isAchievable}
+      <p role="alert">There is no time left to finish all books this year.</p>
     {/if}
+  {/if}
 </section>
 
 <section class="books-section">
-    <h2>Your books</h2>
+  <h2>Your books</h2>
 
-    {#if booksQuery.isPending}
-        <p class="muted">Loading...</p>
-    {:else if booksQuery.isError}
-        <p class="error" role="alert">
-            {booksQuery.error.message}
-        </p>
-    {:else if booksQuery.isSuccess}
-        <ul class="books-list">
-            {#each booksQuery.data.items as book, i (book.id)}
-                <BookCard book={book} index={i}/>
-            {/each}
-        </ul>
-    {/if}
+  {#if booksQuery.isPending}
+    <p class="muted">Loading...</p>
+  {:else if booksQuery.isError}
+    <p class="error" role="alert">
+      {booksQuery.error.message}
+    </p>
+  {:else if booksQuery.isSuccess}
+    <ul class="books-list">
+      {#each booksQuery.data.items as book, i (book.id)}
+        <BookCard {book} index={i} />
+      {/each}
+    </ul>
+  {/if}
 </section>
 
 <style>
-    .summary {
-        padding: 1.5rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.75rem;
-    }
+  .summary {
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+  }
 
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
 
-    .summary-card {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        padding: 1rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-    }
+  .summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+  }
 
-    .summary-card span {
-        font-size: 0.875rem;
-        color: #6b7280;
-    }
+  .summary-card span {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
 
-    .summary-card strong {
-        font-size: 1.5rem;
-    }
+  .summary-card strong {
+    font-size: 1.5rem;
+  }
 
-
-    .book-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .book-info h3 {
-        font-size: 1rem;
-        margin-bottom: 0.25rem;
-    }
+  .book-info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
 </style>
