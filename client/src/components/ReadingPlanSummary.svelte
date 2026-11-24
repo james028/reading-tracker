@@ -93,12 +93,11 @@
 
     <p>
       <span>
-           To finish all books ({countBooks}) by
+        To finish all books ({countBooks}) by
         {readingPlanQuery.data.yearEndDate}, read on average
         {readingPlanQuery.data.requiredPagesPerDay}
         pages per day.
       </span>
-
     </p>
 
     {#if readingPlanQuery.data.pagesLeft === 0}
@@ -151,16 +150,11 @@
   }
 
   .summary-card span {
-    font-size: 0.875rem;
+    font-size: 0.82rem;
     color: #6b7280;
   }
 
   .summary-card strong {
     font-size: 1.5rem;
-  }
-
-  .book-info h3 {
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
   }
 </style>

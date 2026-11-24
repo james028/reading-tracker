@@ -4,9 +4,9 @@
   import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 
   import "../app.css";
-  import ReadingPlanSummary from "../components/ReadingPlanSummary.svelte";
 
   const queryClient = new QueryClient();
+  let { children } = $props();
 </script>
 
 <svelte:head>
@@ -15,8 +15,6 @@
 
 <QueryClientProvider client={queryClient}>
   <main>
-    <section class="section">
-      <ReadingPlanSummary />
-    </section>
+    {@render children()}
   </main>
 </QueryClientProvider>

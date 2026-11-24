@@ -16,7 +16,9 @@ export interface CreateReadingSessionInput {
   note?: string;
 }
 
-export function createReadingSessions(input: CreateReadingSessionInput) {
+export function createReadingSessions(
+  input: CreateReadingSessionInput,
+): Promise<ReadingSession> {
   return apiRequest<ReadingSession>(`/books/${input.bookId}/reading-sessions`, {
     method: "POST",
     body: JSON.stringify({

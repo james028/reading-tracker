@@ -12,10 +12,20 @@ import { booksRoutes } from "./modules/books/books.routes";
 import { readingSessionsRoutes } from "./modules/reading-sessions/reading-sessions.routes";
 import { errorHandler } from "./plugins/error-handler";
 import { readingPlanRoutes } from "./modules/reading-plan/reading-plan.routes";
+import { registerCookiePlugin } from "./plugins/cookie";
+import { adminRoutes } from "./modules/admin/admin.routes";
 
 const app = Fastify({
   logger: true,
 }).withTypeProvider<ZodTypeProvider>();
+
+app.register(cors, {
+  origin: ["http://127.0.0.1:5173", "https://reading-tracker-jk-9.vercel.app"],
+  credentials: true,
+  methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+});
+
+registerCookiePlugin(app);
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
@@ -41,10 +51,6 @@ app.register(FastifySwagger, {
   },
 });
 
-app.register(cors, {
-  origin: ["http://localhost:5173", "https://reading-tracker-jk-9.vercel.app"],
-});
-
 app.register(errorHandler);
 
 app.register(ScalarApiReference, {
@@ -60,6 +66,10 @@ app.register(readingSessionsRoutes, {
 });
 
 app.register(readingPlanRoutes, {
+  prefix: "/api",
+});
+
+app.register(adminRoutes, {
   prefix: "/api",
 });
 

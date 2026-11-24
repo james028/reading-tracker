@@ -2,6 +2,7 @@
   import type { Book } from "#lib/types/book.ts";
   import { createMutation, useQueryClient } from "@tanstack/svelte-query";
   import { createReadingSessions } from "#lib/api/reading-sessions.api.ts";
+  import { ApiError } from "#lib/api/http.ts";
 
   interface BookCard {
     book: Book;
@@ -10,6 +11,15 @@
 
   let { book, index }: BookCard = $props();
   let pagesByBookId = $state<Record<string, number | undefined>>({});
+  let isStatsUpdated = $state(false);
+
+  function highlightStats() {
+    isStatsUpdated = true;
+
+    setTimeout(() => {
+      isStatsUpdated = false;
+    }, 800);
+  }
 
   const setPages = (bookId: string, value: number | undefined) => {
     pagesByBookId[bookId] = value;
@@ -21,23 +31,19 @@
 
   const queryClient = useQueryClient();
 
-  let pagesRead = $state("");
   let readingDate = $state(new Date().toISOString().slice(0, 10));
-  let errorMessage = $state("");
-  let successMessage = $state("");
+  let errorMessage = $state<string | null>(null);
+  let successMessage = $state<string | null>(null);
 
   const createSessionMutation = createMutation(() => ({
-    mutationFn: (input) => createReadingSessions(input),
+    mutationFn: createReadingSessions,
     onSuccess: async () => {
       errorMessage = "";
       successMessage = "Reading session added.";
+      highlightStats();
 
       await queryClient.invalidateQueries({
         queryKey: ["books"],
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ["reading-sessions"],
       });
 
       await queryClient.invalidateQueries({
@@ -48,7 +54,12 @@
     },
     onError: (error: Error) => {
       successMessage = "";
-      errorMessage = error.message;
+
+      console.log(error);
+      errorMessage =
+        error instanceof ApiError
+          ? error.message
+          : "Nie udało się połączyć z serwerem. Spróbuj ponownie.";
     },
   }));
 
@@ -71,19 +82,19 @@
         <h3>{index + 1}. {book.title}</h3>
         <p class="muted">{book.author}</p>
       </div>
-      <span class="badge">
-        {book.progressPercent}%
+      <span class="badge stat-value" class:stat-value--updated={isStatsUpdated}>
+        {book.progressPercent ?? 0}%
       </span>
     </div>
     <progress class="progress" value={book.pagesRead} max={book.totalPages}
     ></progress>
     <div class="book-stats">
-      <span>
-        Pages read: {book.pagesRead}
-        of {book.totalPages}
+      <span class="stat-value" class:stat-value--updated={isStatsUpdated}>
+        Pages read: {book.pagesRead ?? 0}
+        of {book.totalPages ?? 0}
       </span><br />
-      <span class="muted">
-        Pages left: {book.pagesLeft}
+      <span class="muted stat-value" class:stat-value--updated={isStatsUpdated}>
+        Pages left: {book.pagesLeft ?? 0}
       </span>
     </div>
   </article>
@@ -93,7 +104,7 @@
       type="number"
       min="1"
       placeholder="Pages read"
-      value={pagesByBookId[book.id] ?? ''}
+      value={pagesByBookId[book.id] ?? ""}
       oninput={(event) => handleChange(event, book.id)}
     />
 
@@ -119,64 +130,72 @@
   </div>
 </li>
 
-
 <style>
-    .session-form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        margin-top: 0.75rem;
-    }
+  .session-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.75rem;
+  }
 
-    .session-input {
-        width: 7rem;
-        padding: 0.45rem 0.6rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        color: #111827;
-        background-color: #ffffff;
-    }
+  .session-input {
+    width: 7rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    color: #111827;
+    background-color: #ffffff;
+  }
 
-    .session-input:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-    }
+  .session-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  }
 
-    .session-button {
-        padding: 0.45rem 0.75rem;
-        border: none;
-        border-radius: 0.375rem;
-        background-color: #2563eb;
-        color: #ffffff;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-    }
+  .session-button {
+    padding: 0.45rem 0.75rem;
+    border: none;
+    border-radius: 0.375rem;
+    background-color: #2563eb;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
 
-    .session-button:hover:not(:disabled) {
-        background-color: #1d4ed8;
-    }
+  .session-button:hover:not(:disabled) {
+    background-color: #1d4ed8;
+  }
 
-    .session-button:disabled {
-        background-color: #e5e7eb;
-        color: #9ca3af;
-        cursor: not-allowed;
-    }
+  .session-button:disabled {
+    background-color: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
 
-    .session-message {
-        width: 100%;
-        margin: 0;
-        font-size: 0.8125rem;
-    }
+  .session-message {
+    width: 100%;
+    margin: 0;
+    font-size: 0.8125rem;
+  }
 
-    .session-message--error {
-        color: #dc2626;
-    }
+  .session-message--error {
+    color: #dc2626;
+  }
 
-    .session-message--success {
-        color: #16a34a;
-    }
+  .session-message--success {
+    color: #16a34a;
+  }
+
+  .stat-value {
+    font-variant-numeric: tabular-nums;
+    transition: color 200ms ease;
+  }
+
+  .stat-value--updated {
+    color: #16a34a;
+  }
 </style>
