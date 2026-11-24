@@ -40,7 +40,7 @@
   };
 
   const handleLogout = () => {
-    error = "";
+    errorMessage = "";
     logoutMutation.mutate();
   };
 </script>
