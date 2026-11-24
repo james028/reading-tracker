@@ -1,12 +1,14 @@
-const isDevelopment = process.env.NODE_ENV === "development";
+//const isDevelopment = process.env.NODE_ENV === "development";
 
 // export const API_URL = !isDevelopment
 //   ? "https://reading-tracker-api-9qyf.onrender.com/api"
 //   : "http://127.0.0.1:3000/api";
 
-export const API_URL = !isDevelopment
-  ? "https://reading-tracker-api-9qyf.onrender.com/api"
-  : "http://127.0.0.1:3000/api";
+// export const API_URL = !isDevelopment
+//   ? "/api"
+//   : "http://127.0.0.1:3000/api";
+
+export const API_URL = "/api";
 
 export class ApiError extends Error {
   constructor(

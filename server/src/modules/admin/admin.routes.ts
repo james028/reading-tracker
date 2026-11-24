@@ -5,6 +5,8 @@ import {
 } from "../../auth/admin-session";
 import { z } from "zod";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const loginSchema = z.object({
   password: z.string().trim().min(1).max(255),
 });
@@ -28,8 +30,6 @@ export async function adminRoutes(app: FastifyInstance) {
 
       const sessionToken = createAdminSessionToken();
 
-      const isProduction = process.env.NODE_ENV === "production";
-
       reply.setCookie("admin_session", sessionToken, {
         httpOnly: true,
         secure: isProduction,
@@ -45,6 +45,9 @@ export async function adminRoutes(app: FastifyInstance) {
   app.post("/admin/logout", async (_request, reply) => {
     reply.clearCookie("admin_session", {
       path: "/",
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "strict",
     });
 
     return reply.code(204).send();
