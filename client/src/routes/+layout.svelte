@@ -5,7 +5,13 @@
 
   import "../app.css";
 
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        enabled: typeof window !== "undefined",
+      },
+    },
+  });
   let { children } = $props();
 </script>
 
