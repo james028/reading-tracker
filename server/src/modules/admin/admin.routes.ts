@@ -3,37 +3,22 @@ import {
   createAdminSessionToken,
   isAdminPasswordValid,
 } from "../../auth/admin-session";
+import { z } from "zod";
 
-const loginSchema = {
-  body: {
-    type: "object",
-    required: ["password"],
-    properties: {
-      password: {
-        type: "string",
-        minLength: 1,
-      },
-    },
-  },
-};
-
-// const loginSchema2 = {
-//   password: {
-//     type: "string",
-//     minLength: 1,
-//   },
-// };
+const loginSchema = z.object({
+  password: z.string().trim().min(1).max(255),
+});
 
 export async function adminRoutes(app: FastifyInstance) {
   app.post(
     "/admin/login",
     {
-      schema: loginSchema,
+      schema: {
+        body: loginSchema,
+      },
     },
     async (request, reply) => {
       const { password } = request.body as { password: string };
-
-      console.log(password, "sdasfdgdsgds");
 
       if (!isAdminPasswordValid(password)) {
         return reply.code(401).send({
