@@ -108,7 +108,7 @@
   {/if}
 </section>
 
-<section class="books-section">
+<section class="summary section-margin">
   <h2>Your books</h2>
 
   {#if booksQuery.isPending}
@@ -156,5 +156,16 @@
 
   .summary-card strong {
     font-size: 1.5rem;
+  }
+
+  ul,
+  ol {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+  }
+
+  .section-margin {
+      margin-top: 1rem;
   }
 </style>
