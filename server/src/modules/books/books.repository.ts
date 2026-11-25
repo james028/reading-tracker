@@ -6,11 +6,16 @@ import {
   CreateBookInput,
   GetBooksQuery,
 } from "./books.types";
-import { BookNotFoundError } from "../reading-sessions/reading-sessions.service"; // function mapBookRow(row: BookRow[]): BookDto {
 
-class BookTitleAlreadyExistsError extends Error {
+export class BookTitleAlreadyExistsError extends Error {
   constructor() {
     super("Book title is already exists");
+  }
+}
+
+export class BookNotFoundError extends Error {
+  constructor() {
+    super("Book not found");
   }
 }
 
@@ -90,6 +95,8 @@ export const booksRepository = {
   },
 
   async create(input: CreateBookInput): Promise<BookRow> {
+    let row: BookRow | undefined;
+
     try {
       const sql = `INSERT INTO books (title,
                                             author,
@@ -111,12 +118,7 @@ export const booksRepository = {
         input.totalPages,
       ]);
 
-      const row = rows[0];
-      if (!row) {
-        throw new Error("Book not found");
-      }
-
-      return row;
+      row = rows[0];
     } catch (error) {
       if (
         typeof error === "object" &&
@@ -129,6 +131,11 @@ export const booksRepository = {
 
       throw error;
     }
+    if (!row) {
+      throw new BookNotFoundError();
+    }
+
+    return row;
   },
 
   async findById(id: string): Promise<BookRow> {

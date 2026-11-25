@@ -4,6 +4,7 @@ import {
   BookNotFoundError,
   PagesLimitExceededError,
 } from "../modules/reading-sessions/reading-sessions.service";
+import { ConflictError } from "../modules/books/books.service";
 
 export async function errorHandler(app: FastifyInstance) {
   app.setErrorHandler((error, request, reply) => {
@@ -14,6 +15,14 @@ export async function errorHandler(app: FastifyInstance) {
           field: issue.path.join("."),
           message: issue.message,
         })),
+      });
+    }
+
+    if (error instanceof ConflictError) {
+      return reply.status(409).send({
+        statusCode: 409,
+        error: "Conflict",
+        message: error.message,
       });
     }
 

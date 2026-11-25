@@ -126,13 +126,9 @@
           <BookCard {book} index={i} />
         {/each}
       {:else}
-        <div>
-          Brak książek do wyświetlenia.
-        </div>
+        <div>Brak książek do wyświetlenia.</div>
       {/if}
     </ul>
-
-
   {/if}
 </section>
 
@@ -170,12 +166,12 @@
 
   ul,
   ol {
-      margin: 0;
-      padding: 0;
-      list-style-type: none;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
   }
 
   .section-margin {
-      margin-top: 1rem;
+    margin-top: 1rem;
   }
 </style>

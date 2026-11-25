@@ -12,7 +12,7 @@ export const readingSessionsRoutes: FastifyPluginAsync = async (
   app.post(
     "/books/:bookId/reading-sessions",
     {
-      preHandler: requireAdmin,
+      preValidation: requireAdmin,
       schema: {
         params: bookIdParamsSchema,
         body: createReadingSessionSchema,

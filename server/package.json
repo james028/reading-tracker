@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "migrate": "tsx src/scripts/migrate.ts",
-    "test": "vitest",
+    "migrate:test": "tsx --env-file=.env.test src/scripts/migrate.ts",
+    "test": "npm run migrate:test && vitest run",
     "test:watch": "vitest --watch"
   },
   "keywords": [],

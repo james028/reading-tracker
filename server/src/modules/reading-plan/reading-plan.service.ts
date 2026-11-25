@@ -23,6 +23,35 @@ function getDaysLeft(today: Date, yearEndDate: Date): number {
   return Math.max(Math.ceil(differenceInDays), 0);
 }
 
+export function calculateReadingPlan(input: {
+  totalPages: number;
+  pagesRead: number;
+  pagesReadToday: number;
+  now: Date;
+}): ReadingPlanDto {
+  const today = input.now;
+  const year = today.getFullYear();
+  const yearEndDate = getYearEndDate(year);
+
+  const daysLeft = getDaysLeft(today, yearEndDate);
+  const pagesLeft = Math.max(input.totalPages - input.pagesRead, 0);
+
+  const requiredPagesPerDay = daysLeft === 0 ? 0 : pagesLeft / daysLeft;
+
+  return {
+    today: getTodayDateString(),
+    yearEndDate: `${year}-12-31`,
+    daysLeft,
+    totalPages: input.totalPages,
+    pagesRead: input.pagesRead,
+    pagesLeft,
+    pagesReadToday: input.pagesReadToday,
+    requiredPagesPerDay: Number(requiredPagesPerDay.toFixed(2)),
+    recommendedPagesPerDay: Math.ceil(requiredPagesPerDay),
+    isAchievable: pagesLeft === 0 || daysLeft > 0,
+  };
+}
+
 export const readingPlanService = {
   async getReadingPlan(): Promise<ReadingPlanDto> {
     const [resultsTotal, pagesToday] = await Promise.all([
@@ -30,33 +59,15 @@ export const readingPlanService = {
       readingPlanRepository.readingToday(),
     ]);
 
-    //const { totalPages, pagesRead } = await readingPlanRepository.getTotals();
-    //const { totalPages, pagesRead } = await readingPlanRepository.getTotals();
-    //const { pagesReadToday } = await readingPlanRepository.readingToday();
+    const totalPages = resultsTotal.totalPages;
+    const pagesRead = resultsTotal.pagesRead;
+    const pagesReadToday = pagesToday.pagesReadToday;
 
-    const today = new Date();
-    const year = today.getFullYear();
-    const yearEndDate = getYearEndDate(year);
-
-    const daysLeft = getDaysLeft(today, yearEndDate);
-    const pagesLeft = Math.max(
-      resultsTotal.totalPages - resultsTotal.pagesRead,
-      0,
-    );
-
-    const requiredPagesPerDay = daysLeft === 0 ? 0 : pagesLeft / daysLeft;
-
-    return {
-      today: getTodayDateString(),
-      yearEndDate: `${year}-12-31`,
-      daysLeft,
-      totalPages: resultsTotal.totalPages,
-      pagesRead: resultsTotal.pagesRead,
-      pagesLeft,
-      pagesReadToday: pagesToday.pagesReadToday,
-      requiredPagesPerDay: Number(requiredPagesPerDay.toFixed(2)),
-      recommendedPagesPerDay: Math.ceil(requiredPagesPerDay),
-      isAchievable: pagesLeft === 0 || daysLeft > 0,
-    };
+    return calculateReadingPlan({
+      totalPages,
+      pagesRead,
+      pagesReadToday,
+      now: new Date(),
+    });
   },
 };

@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { createBookSchema, getBooksQuerySchema } from "./books.schemas";
 import { booksService } from "./books.service";
+import { requireAdmin } from "../../auth/admin-guard";
 
 export const booksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   app.get(
@@ -21,6 +22,7 @@ export const booksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   app.post(
     "/books",
     {
+      preHandler: requireAdmin,
       schema: {
         body: createBookSchema,
       },

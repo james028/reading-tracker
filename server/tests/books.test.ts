@@ -26,6 +26,14 @@ describe("GET /api/books", () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual([]);
+    expect(res.json()).toEqual({
+      items: [],
+      meta: {
+        limit: 20,
+        page: 1,
+        totalItems: 0,
+        totalPages: 0,
+      },
+    });
   });
 });
