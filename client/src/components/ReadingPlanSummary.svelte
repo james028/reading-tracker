@@ -41,6 +41,8 @@
     <p role="alert">
       {readingPlanQuery.error.message}
     </p>
+  {:else if Object.keys(readingPlanQuery.data).length === 0}
+    <p>No reading plan data available.</p>
   {:else if readingPlanQuery.data}
     <div class="summary-grid">
       <div class="summary-card">
@@ -119,10 +121,18 @@
     </p>
   {:else if booksQuery.isSuccess}
     <ul class="books-list">
-      {#each booksQuery.data.items as book, i (book.id)}
-        <BookCard {book} index={i} />
-      {/each}
+      {#if booksQuery?.data?.items.length > 0}
+        {#each booksQuery?.data?.items as book, i (book.id)}
+          <BookCard {book} index={i} />
+        {/each}
+      {:else}
+        <div>
+          Brak książek do wyświetlenia.
+        </div>
+      {/if}
     </ul>
+
+
   {/if}
 </section>
 

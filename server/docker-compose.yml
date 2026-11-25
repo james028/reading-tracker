@@ -10,6 +10,19 @@ services:
       - "5436:5432"
     volumes:
       - reading_tracker_pgdata:/var/lib/postgresql/data
+  db-test:
+    image: postgres:16-alpine
+    container_name: reading-tracker-db-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: reading_tracker_test
+    ports:
+      - "5437:5432"
+    volumes:
+      - reading_tracker_test_data:/var/lib/postgresql/data
 
 volumes:
   reading_tracker_pgdata:
+  reading_tracker_test_data:
