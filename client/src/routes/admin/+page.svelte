@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { createMutation } from "@tanstack/svelte-query";
-  import { login, logout } from "#lib/api/login.api.ts";
-  import { ApiError } from "#lib/api/http.ts";
+  import { ApiError } from "../../lib/api/http.js";
+  import { login, logout } from "../../lib/api/login.api.js";
 
   let password = $state("");
   let errorMessage = $state<string | null>(null);

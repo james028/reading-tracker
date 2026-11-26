@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { Book } from "#lib/types/book.ts";
+  import type { Book } from "../lib/types/book.ts";
   import { createMutation, useQueryClient } from "@tanstack/svelte-query";
-  import { createReadingSessions } from "#lib/api/reading-sessions.api.ts";
-  import { ApiError } from "#lib/api/http.ts";
+  import { createReadingSessions } from "../lib/api/reading-sessions.api.js";
+  import { ApiError } from "../lib/api/http.js";
 
   interface BookCard {
     book: Book;

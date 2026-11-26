@@ -1,4 +1,4 @@
-import { apiRequest } from "#lib/api/http.ts";
+import { apiRequest } from "./http";
 
 export interface ReadingSession {
   id: string;

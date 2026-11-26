@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createQuery } from "@tanstack/svelte-query";
-  import { getReadingPlan } from "#lib";
-  import { getBooks } from "#lib";
+  import { getReadingPlan } from "../lib/api/reading-plan.api.js";
   import BookCard from "./BookCard.svelte";
+  import { getBooks } from "../lib/api/books.api.js";
 
   const readingPlanQuery = createQuery(() => ({
     queryKey: ["reading-plan"],

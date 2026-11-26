@@ -1,4 +1,4 @@
-import { apiRequest } from "#lib/api/http.ts";
+import { apiRequest } from "./http";
 
 export function login(password: string): Promise<{ sessionToken: string }> {
   return apiRequest<{ sessionToken: string }>(`/admin/login`, {
