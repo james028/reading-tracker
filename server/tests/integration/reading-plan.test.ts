@@ -51,7 +51,7 @@ async function createReadingSession(
     url: `/api/books/${bookId}/reading-sessions`,
     cookies,
     payload: {
-      readingDate: "2026-11-25",
+      readingDate: new Date().toISOString().slice(0, 10),
       pagesRead,
     },
   });
