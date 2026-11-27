@@ -6,19 +6,19 @@
 
   const readingPlanQuery = createQuery(() => ({
     queryKey: ["reading-plan"],
-    queryFn: getReadingPlan,
+    queryFn: getReadingPlan
   }));
 
   const booksQuery = createQuery(() => ({
     queryKey: ["books"],
-    queryFn: getBooks,
+    queryFn: getBooks
   }));
 
   const countBooks = $derived(
     booksQuery?.data?.items?.reduce(
       (count, book) => count + (book.pagesLeft !== 0 ? 1 : 0),
-      0,
-    ) ?? 0,
+      0
+    ) ?? 0
   );
 
   const progressPercent = $derived.by(() => {
@@ -30,6 +30,42 @@
 
     return Number(((plan.pagesRead / plan.totalPages) * 100).toFixed(2));
   });
+
+  const summaryCards: { key: string; label: string; value: number | string; extra?: string }[] = $derived([
+    {
+      key: "days-left",
+      label: "Days left",
+      value: readingPlanQuery.data?.daysLeft ?? 0
+    },
+    {
+      key: "total-pages",
+      label: "Total pages",
+      value: readingPlanQuery.data?.totalPages ?? 0
+    },
+    {
+      key: "pages-left",
+      label: "Pages left",
+      value: readingPlanQuery.data?.pagesLeft ?? 0,
+      extra: `in ${countBooks} book(s)`
+    },
+    {
+      key: "read-today",
+      label: "Read today",
+      value: readingPlanQuery.data?.pagesReadToday ?? 0,
+      extra: "pages"
+    },
+    {
+      key: "read-per-day",
+      label: "Read per day",
+      value: readingPlanQuery.data?.recommendedPagesPerDay ?? 0,
+      extra: "pages"
+    },
+    {
+      key: "progress",
+      label: "Progress",
+      value: `${progressPercent}%`
+    }
+  ]);
 </script>
 
 <section class="summary">
@@ -45,47 +81,17 @@
     <p>No reading plan data available.</p>
   {:else if readingPlanQuery.data}
     <div class="summary-grid">
-      <div class="summary-card">
-        <span>Days left</span>
-        <strong>
-          {readingPlanQuery.data.daysLeft}
-        </strong>
-      </div>
-
-      <div class="summary-card">
-        <span>Total pages</span>
-        <strong>
-          {readingPlanQuery.data.totalPages}
-        </strong>
-      </div>
-
-      <div class="summary-card">
-        <span>Pages left</span>
-        <strong>
-          {readingPlanQuery.data.pagesLeft} <span>in {countBooks} book(s)</span>
-        </strong>
-      </div>
-
-      <div class="summary-card">
-        <span>Read today</span>
-        <strong>
-          {readingPlanQuery.data.pagesReadToday}
-          <span>pages</span>
-        </strong>
-      </div>
-
-      <div class="summary-card">
-        <span>Read per day</span>
-        <strong>
-          {readingPlanQuery.data.recommendedPagesPerDay}
-          <span>pages</span>
-        </strong>
-      </div>
-
-      <div class="summary-card">
-        <span>Progress</span>
-        <strong>{progressPercent}%</strong>
-      </div>
+      {#each summaryCards as card (card.key)}
+        <div class="summary-card">
+          <span class="summary-card__label">{card.label}</span>
+          <strong class="summary-card__value">
+            {card.value}
+            {#if card.extra}
+              <span class="summary-card__extra">{card.extra}</span>
+            {/if}
+          </strong>
+        </div>
+      {/each}
     </div>
 
     <progress
@@ -133,45 +139,57 @@
 </section>
 
 <style>
-  .summary {
-    padding: 1.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.75rem;
-  }
+    .summary {
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+    }
 
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
 
-  .summary-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-  }
+    .summary-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        min-width: 0;
+    }
 
-  .summary-card span {
-    font-size: 0.82rem;
-    color: #6b7280;
-  }
+    .summary-card__label {
+        font-size: 0.82rem;
+        color: #6b7280;
+    }
 
-  .summary-card strong {
-    font-size: 1.5rem;
-  }
+    .summary-card__value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-  ul,
-  ol {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-  }
+    .summary-card__extra {
+        font-size: 0.85rem;
+        font-weight: 400;
+        color: #6b7280;
+        margin-left: 0.15rem;
+    }
 
-  .section-margin {
-    margin-top: 1rem;
-  }
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    .section-margin {
+        margin-top: 1rem;
+    }
 </style>

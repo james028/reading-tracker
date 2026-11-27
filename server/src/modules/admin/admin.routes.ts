@@ -18,6 +18,12 @@ export async function adminRoutes(app: FastifyInstance) {
       schema: {
         body: loginSchema,
       },
+      config: {
+        rateLimit: {
+          max: Number(process.env.LOGIN_RATE_LIMIT_MAX ?? 5),
+          timeWindow: "1 minute",
+        },
+      },
     },
     async (request, reply) => {
       const { password } = request.body as { password: string };
